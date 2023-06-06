@@ -30,8 +30,7 @@ class ChallengeHandler(commands.Cog):
     async def assign_winners(self, ctx, message: discord.Message):
         m = await self.bot.get_channel(settings.challenges.discussion_channel_id).fetch_message(message.id)
         for i in re.findall(r"<@!?(\d+)>", m.embeds[0].description):
-            member = ctx.guild.get_member(int(i))
-            if member:
+            if member := ctx.guild.get_member(int(i)):
                 await member.add_roles(discord.Object(settings.challenges.winner_role_id))
             else:
                 await ctx.send(f"Winner role not assigned to {await self.bot.fetch_user(int(i))}")

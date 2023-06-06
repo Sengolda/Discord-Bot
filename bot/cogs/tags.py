@@ -27,10 +27,7 @@ class TagCommands(commands.Cog, name="Tags"):
         return self.bot.get_channel(settings.tags.log_channel_id)
 
     def cog_check(self, ctx):
-        if ctx.guild is None:
-            return False
-
-        return True
+        return ctx.guild is not None
 
     @staticmethod
     def log_embeds(
@@ -352,7 +349,7 @@ class TagCommands(commands.Cog, name="Tags"):
             if not is_admin(ctx.author):
                 return await ctx.send("You don't have permission to do that.")
 
-        new_text = tag.text + " " + text
+        new_text = f"{tag.text} {text}"
 
         if len(new_text) > 2000:
             return await ctx.send("Cannot append, content length will exceed discords maximum message length.")

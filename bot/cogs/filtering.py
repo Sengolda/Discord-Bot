@@ -15,10 +15,7 @@ class Filtering(commands.Cog):
         self.configs = {}
 
     async def cog_check(self, ctx):
-        if not ctx.guild:
-            return False
-
-        return is_staff(ctx.author)
+        return False if not ctx.guild else is_staff(ctx.author)
 
     async def assure_config(self, guild_id: int):
         if str(guild_id) not in self.configs:
@@ -60,8 +57,7 @@ class Filtering(commands.Cog):
                                 f"The link you sent is not allowed on this server. {message.author.mention} "
                                 "If you believe this is a mistake contact a staff member."
                             )
-                            reason = config.has_reason(result)
-                            if reason:
+                            if reason := config.has_reason(result):
                                 reply += "\n\n" + reason
                             await message.delete()
                             return await message.channel.send(reply)
@@ -71,10 +67,14 @@ class Filtering(commands.Cog):
 
     async def _blacklisted_url(self, netloc: str, guild_id: int) -> bool:
         """Checks if the provided netloc is blacklisted."""
-        for url in self.configs[str(guild_id)].blacklist_urls:
-            if url in netloc:
-                return url
-        return False
+        return next(
+            (
+                url
+                for url in self.configs[str(guild_id)].blacklist_urls
+                if url in netloc
+            ),
+            False,
+        )
 
     @commands.group()
     async def filter(self, ctx):
@@ -151,12 +151,11 @@ class Filtering(commands.Cog):
         reason = await ctx.prompt_reply("Any specific reason for blacklisting this url?\nReply with `no` for no reason")
         if reason is None:
             return await ctx.send("Ok, set no reason")
-        else:
-            if reason.lower() == "no":
-                return await ctx.send("Ok, set no reason")
-            config.reasons[url] = reason
-            await config.update()
-            await ctx.send(f"Ok the reason for this blacklist is now: {reason}")
+        if reason.lower() == "no":
+            return await ctx.send("Ok, set no reason")
+        config.reasons[url] = reason
+        await config.update()
+        await ctx.send(f"Ok the reason for this blacklist is now: {reason}")
 
     @blacklist.command()
     async def remove(self, ctx, url: str):
@@ -179,12 +178,11 @@ class Filtering(commands.Cog):
         string = "```"
         for url in config.blacklist_urls:
             string += url
-            reason = config.has_reason(url)
-            if reason:
+            if reason := config.has_reason(url):
                 string += f" :reason: {reason}\n"
             else:
                 string += " :: \n"
-        await ctx.send(string + "```")
+        await ctx.send(f"{string}```")
 
     @filter.group()
     async def whitelist(self, ctx):

@@ -36,7 +36,7 @@ class Model(BaseModel):
         if con is None:
             con = cls.pool
         records = await con.fetch(query, *args)
-        if cls is Model or convert is False:
+        if cls is Model or not convert:
             return records
         return [cls(**record) for record in records]
 
@@ -47,7 +47,7 @@ class Model(BaseModel):
         if con is None:
             con = cls.pool
         record = await con.fetchrow(query, *args)
-        if cls is Model or record is None or convert is False:
+        if cls is Model or record is None or not convert:
             return record
         return cls(**record)
 

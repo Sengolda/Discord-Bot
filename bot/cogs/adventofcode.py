@@ -283,10 +283,10 @@ class AdventOfCode(commands.Cog, name="Advent of Code"):
             # Group 3: Member string
             r = re.match(exp, raw_str)
 
-            rank = int(r.group(1)) if r.group(1) else None
-            global_score = int(r.group(2))
+            rank = int(r[1]) if r[1] else None
+            global_score = int(r[2])
 
-            member = r.group(3)
+            member = r[3]
             if member.lower().startswith("(anonymous"):
                 # Normalize anonymous user string by stripping () and title casing
                 member = re.sub(r"[\(\)]", "", member).title()

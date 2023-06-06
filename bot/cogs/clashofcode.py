@@ -114,7 +114,7 @@ class ClashOfCode(commands.Cog):
         for member in self.role.members:
             if member != ctx.author:
                 if member.status != discord.Status.offline:
-                    pager.add_line(member.mention + ", ")
+                    pager.add_line(f"{member.mention}, ")
 
         if not len(pager.pages):
             return await ctx.send(f"{ctx.author.mention}, Nobody is online to play with <:pepesad:733816214010331197>")
@@ -260,7 +260,7 @@ class ClashOfCode(commands.Cog):
         for member_id in self.session_users:
             if member_id != ctx.author.id:
                 member = self.bot.get_user(member_id)
-                pager.add_line(member.mention + ", ")
+                pager.add_line(f"{member.mention}, ")
 
         if not len(pager.pages):
             return await ctx.send(f"{ctx.author.mention}, Nobody is online to play with <:pepesad:733816214010331197>")

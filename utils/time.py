@@ -14,9 +14,7 @@ class Plural:
         v = self.value
         singular, sep, plural = format_spec.partition("|")
         plural = plural or f"{singular}s"
-        if abs(v) != 1:
-            return f"{v} {plural}"
-        return f"{v} {singular}"
+        return f"{v} {plural}" if abs(v) != 1 else f"{v} {singular}"
 
 
 def human_join(seq, delim=", ", final="or"):
@@ -30,7 +28,7 @@ def human_join(seq, delim=", ", final="or"):
     if size == 2:
         return f"{seq[0]} {final} {seq[1]}"
 
-    return delim.join(seq[:-1]) + f" {final} {seq[-1]}"
+    return f"{delim.join(seq[:-1])} {final} {seq[-1]}"
 
 
 def human_timedelta(dt, *, source=None, accuracy=3, brief=False, suffix=True):
@@ -61,13 +59,12 @@ def human_timedelta(dt, *, source=None, accuracy=3, brief=False, suffix=True):
 
     output = []
     for attr, brief_attr in attrs:
-        elem = getattr(delta, attr + "s")
+        elem = getattr(delta, f"{attr}s")
         if not elem:
             continue
 
         if attr == "day":
-            weeks = delta.weeks
-            if weeks:
+            if weeks := delta.weeks:
                 elem -= weeks * 7
                 if not brief:
                     output.append(format(Plural(weeks), "week"))
@@ -87,8 +84,8 @@ def human_timedelta(dt, *, source=None, accuracy=3, brief=False, suffix=True):
 
     if len(output) == 0:
         return "now"
+    if brief:
+        return " ".join(output) + suffix
+
     else:
-        if not brief:
-            return human_join(output, final="and") + suffix
-        else:
-            return " ".join(output) + suffix
+        return human_join(output, final="and") + suffix
