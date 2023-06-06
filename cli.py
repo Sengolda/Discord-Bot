@@ -70,7 +70,7 @@ async def prepare_postgres(postgres_uri: str, retries: int = 5, interval: float 
             log.error(str(e))
             return False
 
-        except (ConnectionRefusedError,):
+        except ConnectionRefusedError:
             log.warning(f"Failed attempt #{i}/{retries}, trying again in {interval}s")
 
             if i == retries:
@@ -100,9 +100,7 @@ async def main(ctx):
 async def run_migration(file: str = "000_migrations.sql") -> None:
     path = ROOT_DIR / "migrations"
 
-    with open(path / file) as f:
-        query = f.read()
-
+    query = pathlib.Path(path / file).read_text()
     await Model.execute(query)
     match = REVISION_FILE.match(file)
 
@@ -161,18 +159,14 @@ async def update(n: int, is_target: bool = False):
     revs = Revisions.revisions()
 
     if cur.direction == "down":
-        if cur.version == 1:
-            cur = fake0
-        else:
-            cur = revs[cur.version - 1, "up"]
-
+        cur = fake0 if cur.version == 1 else revs[cur.version - 1, "up"]
     if is_target:
         k = n if n > 0 else -n - 1
         if k == cur.version:
             return click.echo("Current migration's version is already equal to targeted version", err=True)
 
         if n > 0 and n > cur.version:
-            n = n - cur.version
+            n -= cur.version
         elif n < 0 and n < cur.version:
             n = -n - cur.version - 1
         else:

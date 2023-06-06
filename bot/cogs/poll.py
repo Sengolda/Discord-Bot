@@ -109,7 +109,10 @@ class Polls(commands.Cog):
             poll_embed = message.embeds[0]
             reactions = message.reactions
             reactions_total = sum(
-                [reaction.count - 1 if str(reaction.emoji) in self.reactions.values() else 0 for reaction in reactions]
+                reaction.count - 1
+                if str(reaction.emoji) in self.reactions.values()
+                else 0
+                for reaction in reactions
             )
 
             options = list(

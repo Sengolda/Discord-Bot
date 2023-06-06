@@ -40,9 +40,7 @@ def finder(text, collection, *, key=None, lazy=True):
             suggestions.append((len(r.group()), r.start(), item))
 
     def sort_key(tup):
-        if key:
-            return tup[0], tup[1], key(tup[2])
-        return tup
+        return (tup[0], tup[1], key(tup[2])) if key else tup
 
     if lazy:
         return (z for _, _, z in sorted(suggestions, key=sort_key))
@@ -151,8 +149,7 @@ class Commands(commands.Cog):
 
         lines, firstlineno = inspect.getsourcelines(source)
         location = module.replace(".", "/")
-        url = f"{base_url}/blob/{branch}/{location}.py#L" f"{firstlineno}-L{firstlineno + len(lines) - 1}"
-        return url
+        return f"{base_url}/blob/{branch}/{location}.py#L{firstlineno}-L{firstlineno + len(lines) - 1}"
 
     @commands.command()
     async def source(self, ctx, *, command: str = None):
@@ -165,9 +162,7 @@ class Commands(commands.Cog):
         if cmd is None:
             return await ctx.send(f"That command does not exist:\n{base_url}")
         elif cmd == self.bot.help_command:
-            return await ctx.send(
-                base_url + "/blob/master/cogs/_help.py"
-            )  # sends the custom help command rather than a malformed link
+            return await ctx.send(f"{base_url}/blob/master/cogs/_help.py")
 
         try:
             source = inspect.getsource(cmd.callback)
@@ -463,23 +458,22 @@ class Commands(commands.Cog):
             message = await channel.fetch_message(msg_id)
             reaction_upvote = get(message.reactions, emoji="👍")
             reaction_downvote = get(message.reactions, emoji="👎")
-            if message.author != ctx.bot.user:
-                if not message.embeds[0].author.name.startswith("Poll"):
-                    return await ctx.send("That message is not a poll!")
-            else:
+            if message.author == ctx.bot.user:
                 poll_embed = message.embeds[0]
                 embed = discord.Embed(description=f"Suggestion: {poll_embed.description}")
                 embed.set_author(name=poll_embed.author.name, icon_url=poll_embed.author.icon_url)
                 embed.add_field(name="Upvotes:", value=f"{reaction_upvote.count} 👍")
                 embed.add_field(name="Downvotes:", value=f"{reaction_downvote.count} 👎")
                 await ctx.send(embed=embed)
+            elif not message.embeds[0].author.name.startswith("Poll"):
+                return await ctx.send("That message is not a poll!")
         except Exception:
             return await ctx.send("That message is not a poll!")
 
     async def build_docs_lookup_table(self, page_types):
         cache = {}
         for key, page in page_types.items():
-            async with self.bot.session.get(page + "/objects.inv") as resp:
+            async with self.bot.session.get(f"{page}/objects.inv") as resp:
                 if resp.status != 200:
                     raise RuntimeError("Cannot build docs lookup table, try again later.")
 

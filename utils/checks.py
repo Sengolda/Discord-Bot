@@ -5,19 +5,15 @@ from bot.config import settings
 
 
 def is_admin(member: Member):
-    for role in member.roles:
-        if role.id in settings.moderation.admin_roles_ids:
-            return True
-
-    return False
+    return any(
+        role.id in settings.moderation.admin_roles_ids for role in member.roles
+    )
 
 
 def is_staff(member: Member):
-    for role in member.roles:
-        if role.id == settings.moderation.staff_role_id:
-            return True
-
-    return False
+    return any(
+        role.id == settings.moderation.staff_role_id for role in member.roles
+    )
 
 
 def is_engineer(member: Member):

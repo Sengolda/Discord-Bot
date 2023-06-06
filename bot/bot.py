@@ -137,10 +137,7 @@ class Tim(commands.Bot):
 
         error = getattr(exception, "original", exception)
 
-        if hasattr(ctx.command, "on_error"):
-            return
-
-        elif isinstance(error, CheckFailure):
+        if hasattr(ctx.command, "on_error") or isinstance(error, CheckFailure):
             return
 
         if isinstance(

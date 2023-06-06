@@ -18,9 +18,7 @@ def to_pages_by_lines(content: str, max_size: int):
 
 def embed_to_string(embed: discord.Embed) -> str:
     """Convert a embed to a string"""
-    string = ""
-    if embed.author:
-        string = f"{embed.author.name}\n"
+    string = f"{embed.author.name}\n" if embed.author else ""
     if embed.title:
         string += f"{embed.title}\n"
     if embed.description:
@@ -98,10 +96,7 @@ class SyltesContext(commands.Context):
             if delete_after:
                 asyncio.ensure_future(self.cleanup(message, self.message, _msg), loop=self.bot.loop)
         finally:
-            if message.content:
-                return message.content
-            else:
-                return None
+            return message.content if message.content else None
 
     async def em(self, delete_after=None, **kwargs):
         """Shortcut to send embeds with `bot.em`"""
